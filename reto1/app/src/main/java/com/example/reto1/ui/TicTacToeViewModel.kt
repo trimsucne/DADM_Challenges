@@ -42,11 +42,12 @@ class TicTacToeViewModel : ViewModel() {
             state.copy(
                 board = newBoard,
                 gameStatus = newStatus,
-                currentPlayer = TicTacToeGame.COMPUTER_SYMBOL
+                currentPlayer = TicTacToeGame.COMPUTER_SYMBOL,
+                humanWins = if (newStatus == TicTacToeGame.HUMAN_SYMBOL) state.humanWins + 1 else state.humanWins,
+                computerWins = if (newStatus == TicTacToeGame.COMPUTER_SYMBOL) state.computerWins + 1 else state.computerWins,
+                ties = if (newStatus == 'T') state.ties + 1 else state.ties
             ).also { updatedState ->
-                if (newStatus != TicTacToeGame.EMPTY_SYMBOL) {
-                    updateScores(newStatus)
-                } else if (updatedState.currentPlayer == TicTacToeGame.COMPUTER_SYMBOL) {
+                if (newStatus == TicTacToeGame.EMPTY_SYMBOL && updatedState.currentPlayer == TicTacToeGame.COMPUTER_SYMBOL) {
                     triggerComputerMove()
                 }
             }
@@ -71,29 +72,17 @@ class TicTacToeViewModel : ViewModel() {
                             board = newBoard,
                             gameStatus = newStatus,
                             currentPlayer = TicTacToeGame.HUMAN_SYMBOL,
-                            isComputerThinking = false
-                        ).also {
-                            if (newStatus != TicTacToeGame.EMPTY_SYMBOL) {
-                                updateScores(newStatus)
-                            }
-                        }
+                            isComputerThinking = false,
+                            humanWins = if (newStatus == TicTacToeGame.HUMAN_SYMBOL) state.humanWins + 1 else state.humanWins,
+                            computerWins = if (newStatus == TicTacToeGame.COMPUTER_SYMBOL) state.computerWins + 1 else state.computerWins,
+                            ties = if (newStatus == 'T') state.ties + 1 else state.ties
+                        )
                     } else {
                         state.copy(isComputerThinking = false)
                     }
                 } else {
                     state.copy(isComputerThinking = false)
                 }
-            }
-        }
-    }
-
-    private fun updateScores(status: Char) {
-        _uiState.update { state ->
-            when (status) {
-                TicTacToeGame.HUMAN_SYMBOL -> state.copy(humanWins = state.humanWins + 1)
-                TicTacToeGame.COMPUTER_SYMBOL -> state.copy(computerWins = state.computerWins + 1)
-                'T' -> state.copy(ties = state.ties + 1)
-                else -> state
             }
         }
     }

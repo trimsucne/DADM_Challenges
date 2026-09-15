@@ -1,6 +1,5 @@
 package com.example.reto1
 
-import com.example.reto1.logic.Difficulty
 import com.example.reto1.logic.TicTacToeGame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -55,37 +54,35 @@ class TicTacToeGameTest {
     }
 
     @Test
-    fun testGetComputerMove_easy_returnsAvailableIndex() {
+    fun testGetComputerMove_returnsAvailableIndex() {
         val board = listOf(
             'X', 'O', 'X',
             ' ', ' ', ' ',
             ' ', ' ', ' '
         )
-        val move = TicTacToeGame.getComputerMove(board, Difficulty.EASY)
+        val move = TicTacToeGame.getComputerMove(board)
         assertTrue(move in 3..8)
     }
 
     @Test
-    fun testGetComputerMove_medium_winsIfPossible() {
-        // AI needs one more 'O' in top row to win
+    fun testGetComputerMove_winsIfPossible() {
         val board = listOf(
             'O', 'O', ' ',
             'X', 'X', ' ',
             ' ', ' ', ' '
         )
-        val move = TicTacToeGame.getComputerMove(board, Difficulty.MEDIUM)
+        val move = TicTacToeGame.getComputerMove(board)
         assertEquals(2, move)
     }
 
     @Test
-    fun testGetComputerMove_medium_blocksHuman() {
-        // Human has two 'X's in second row, AI should block
+    fun testGetComputerMove_blocksHuman() {
         val board = listOf(
             'O', ' ', ' ',
             'X', 'X', ' ',
             ' ', ' ', ' '
         )
-        val move = TicTacToeGame.getComputerMove(board, Difficulty.MEDIUM)
+        val move = TicTacToeGame.getComputerMove(board)
         assertEquals(5, move)
     }
 }
