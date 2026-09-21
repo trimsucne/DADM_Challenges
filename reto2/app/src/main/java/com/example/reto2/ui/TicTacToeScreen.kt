@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +55,12 @@ fun TicTacToeScreen(
                     ) {
                         DropdownMenuItem(
                             text = { Text("New Game") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = com.example.reto2.R.drawable.ic_menu_new_game),
+                                    contentDescription = null
+                                )
+                            },
                             onClick = {
                                 menuExpanded = false
                                 viewModel.resetGame()
@@ -61,6 +68,12 @@ fun TicTacToeScreen(
                         )
                         DropdownMenuItem(
                             text = { Text("AI Difficulty") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = com.example.reto2.R.drawable.ic_menu_difficulty),
+                                    contentDescription = null
+                                )
+                            },
                             onClick = {
                                 menuExpanded = false
                                 viewModel.setShowDifficultyDialog(true)
@@ -68,6 +81,12 @@ fun TicTacToeScreen(
                         )
                         DropdownMenuItem(
                             text = { Text("About") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = com.example.reto2.R.drawable.ic_menu_about),
+                                    contentDescription = null
+                                )
+                            },
                             onClick = {
                                 menuExpanded = false
                                 viewModel.setShowAboutDialog(true)
@@ -75,6 +94,12 @@ fun TicTacToeScreen(
                         )
                         DropdownMenuItem(
                             text = { Text("Quit") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = com.example.reto2.R.drawable.ic_menu_quit),
+                                    contentDescription = null
+                                )
+                            },
                             onClick = {
                                 menuExpanded = false
                                 viewModel.setShowQuitDialog(true)
@@ -129,7 +154,7 @@ fun TicTacToeScreen(
             title = { Text("About Tic-Tac-Toe") },
             text = {
                 Column {
-                    Text("Developer: Android Developer", fontWeight = FontWeight.Bold)
+                    Text("Developer: Trim Suc", fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text("An interactive 3x3 Tic-Tac-Toe game featuring an advanced AI opponent with adjustable difficulty levels.")
                 }
