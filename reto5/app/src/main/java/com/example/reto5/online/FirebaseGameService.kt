@@ -75,7 +75,10 @@ class FirebaseGameService {
             board = "         ",
             currentTurn = "X",
             status = OnlineGameModel.STATUS_WAITING,
-            winner = " "
+            winner = " ",
+            hostWins = 0,
+            guestWins = 0,
+            ties = 0
         )
 
         val db = firestore
@@ -215,9 +218,21 @@ class FirebaseGameService {
         }
     }
 
-    fun makeMove(gameId: String, newBoard: List<Char>, nextTurn: String, winner: String) {
+    fun makeMove(
+        gameId: String,
+        newBoard: List<Char>,
+        nextTurn: String,
+        winner: String,
+        currentHostWins: Int,
+        currentGuestWins: Int,
+        currentTies: Int
+    ) {
         val boardStr = newBoard.joinToString("")
         val status = if (winner != " ") OnlineGameModel.STATUS_FINISHED else OnlineGameModel.STATUS_PLAYING
+
+        val newHostWins = if (winner == "X") currentHostWins + 1 else currentHostWins
+        val newGuestWins = if (winner == "O") currentGuestWins + 1 else currentGuestWins
+        val newTies = if (winner == "T") currentTies + 1 else currentTies
 
         val db = firestore
         if (db != null) {
@@ -225,18 +240,30 @@ class FirebaseGameService {
                 "board" to boardStr,
                 "currentTurn" to nextTurn,
                 "winner" to winner,
-                "status" to status
+                "status" to status,
+                "hostWins" to newHostWins,
+                "guestWins" to newGuestWins,
+                "ties" to newTies
             )
             db.collection("games").document(gameId).update(updates)
                 .addOnFailureListener {
-                    makeMoveCloudRest(gameId, boardStr, nextTurn, winner, status)
+                    makeMoveCloudRest(gameId, boardStr, nextTurn, winner, status, newHostWins, newGuestWins, newTies)
                 }
         } else {
-            makeMoveCloudRest(gameId, boardStr, nextTurn, winner, status)
+            makeMoveCloudRest(gameId, boardStr, nextTurn, winner, status, newHostWins, newGuestWins, newTies)
         }
     }
 
-    private fun makeMoveCloudRest(gameId: String, boardStr: String, nextTurn: String, winner: String, status: String) {
+    private fun makeMoveCloudRest(
+        gameId: String,
+        boardStr: String,
+        nextTurn: String,
+        winner: String,
+        status: String,
+        hostWins: Int,
+        guestWins: Int,
+        ties: Int
+    ) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val existing = fetchSingleCloudGame(gameId) ?: mockLobbyGames.value[gameId]
@@ -245,7 +272,10 @@ class FirebaseGameService {
                         board = boardStr,
                         currentTurn = nextTurn,
                         winner = winner,
-                        status = status
+                        status = status,
+                        hostWins = hostWins,
+                        guestWins = guestWins,
+                        ties = ties
                     )
                     val url = URL("$cloudBaseUrl/$gameId.json")
                     val conn = url.openConnection() as HttpURLConnection
@@ -284,6 +314,43 @@ class FirebaseGameService {
                             currentTurn = "X",
                             winner = " ",
                             status = OnlineGameModel.STATUS_PLAYING
+                        )
+                        val url = URL("$cloudBaseUrl/$gameId.json")
+                        val conn = url.openConnection() as HttpURLConnection
+                        conn.requestMethod = "PUT"
+                        conn.doOutput = true
+                        conn.setRequestProperty("Content-Type", "application/json")
+
+                        val jsonStr = gameToJson(updated)
+                        conn.outputStream.use { it.write(jsonStr.toByteArray(Charsets.UTF_8)) }
+                        conn.responseCode
+                        mockLobbyGames.value = mockLobbyGames.value + (gameId to updated)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    fun resetOnlineScores(gameId: String) {
+        val db = firestore
+        if (db != null) {
+            val updates = mapOf(
+                "hostWins" to 0,
+                "guestWins" to 0,
+                "ties" to 0
+            )
+            db.collection("games").document(gameId).update(updates)
+        } else {
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    val existing = fetchSingleCloudGame(gameId) ?: mockLobbyGames.value[gameId]
+                    if (existing != null) {
+                        val updated = existing.copy(
+                            hostWins = 0,
+                            guestWins = 0,
+                            ties = 0
                         )
                         val url = URL("$cloudBaseUrl/$gameId.json")
                         val conn = url.openConnection() as HttpURLConnection
@@ -354,6 +421,9 @@ class FirebaseGameService {
             "currentTurn" to game.currentTurn,
             "status" to game.status,
             "winner" to game.winner,
+            "hostWins" to game.hostWins,
+            "guestWins" to game.guestWins,
+            "ties" to game.ties,
             "createdAt" to game.createdAt
         )
     }
@@ -367,6 +437,9 @@ class FirebaseGameService {
         json.put("currentTurn", game.currentTurn)
         json.put("status", game.status)
         json.put("winner", game.winner)
+        json.put("hostWins", game.hostWins)
+        json.put("guestWins", game.guestWins)
+        json.put("ties", game.ties)
         json.put("createdAt", game.createdAt)
         return json.toString()
     }
@@ -380,6 +453,9 @@ class FirebaseGameService {
             currentTurn = obj.optString("currentTurn", "X"),
             status = obj.optString("status", OnlineGameModel.STATUS_WAITING),
             winner = obj.optString("winner", " "),
+            hostWins = obj.optInt("hostWins", 0),
+            guestWins = obj.optInt("guestWins", 0),
+            ties = obj.optInt("ties", 0),
             createdAt = obj.optLong("createdAt", System.currentTimeMillis())
         )
     }

@@ -128,7 +128,10 @@ class TicTacToeViewModel : ViewModel() {
                             onlineGame = onlineGame,
                             board = boardList,
                             gameStatus = gameStatusChar,
-                            currentPlayer = if (onlineGame.currentTurn == "X") TicTacToeGame.HUMAN_SYMBOL else TicTacToeGame.COMPUTER_SYMBOL
+                            currentPlayer = if (onlineGame.currentTurn == "X") TicTacToeGame.HUMAN_SYMBOL else TicTacToeGame.COMPUTER_SYMBOL,
+                            humanWins = onlineGame.hostWins,
+                            computerWins = onlineGame.guestWins,
+                            ties = onlineGame.ties
                         )
                     }
                 }
@@ -242,7 +245,8 @@ class TicTacToeViewModel : ViewModel() {
 
     private fun makeOnlineMove(index: Int, mySymbol: String) {
         val state = _uiState.value
-        val gameId = state.onlineGame?.gameId ?: return
+        val onlineGame = state.onlineGame ?: return
+        val gameId = onlineGame.gameId
 
         val newBoard = state.board.toMutableList()
         newBoard[index] = if (mySymbol == "X") TicTacToeGame.HUMAN_SYMBOL else TicTacToeGame.COMPUTER_SYMBOL
@@ -262,7 +266,15 @@ class TicTacToeViewModel : ViewModel() {
             soundManager?.playComputerMoveSound()
         }
 
-        firebaseGameService.makeMove(gameId, newBoard, nextTurn, winnerStr)
+        firebaseGameService.makeMove(
+            gameId = gameId,
+            newBoard = newBoard,
+            nextTurn = nextTurn,
+            winner = winnerStr,
+            currentHostWins = onlineGame.hostWins,
+            currentGuestWins = onlineGame.guestWins,
+            currentTies = onlineGame.ties
+        )
     }
 
     fun resetGame() {
@@ -285,13 +297,28 @@ class TicTacToeViewModel : ViewModel() {
     }
 
     fun resetScores() {
-        preferencesManager?.resetScores()
-        _uiState.update { state ->
-            state.copy(
-                humanWins = 0,
-                computerWins = 0,
-                ties = 0
-            )
+        val state = _uiState.value
+        if (state.gameMode == GameMode.LOCAL_VS_AI) {
+            preferencesManager?.resetScores()
+            _uiState.update { state ->
+                state.copy(
+                    humanWins = 0,
+                    computerWins = 0,
+                    ties = 0
+                )
+            }
+        } else {
+            val gameId = state.onlineGame?.gameId
+            if (gameId != null) {
+                firebaseGameService.resetOnlineScores(gameId)
+            }
+            _uiState.update { state ->
+                state.copy(
+                    humanWins = 0,
+                    computerWins = 0,
+                    ties = 0
+                )
+            }
         }
     }
 

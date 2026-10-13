@@ -10,6 +10,9 @@ data class OnlineGameModel(
     val currentTurn: String = "X", // "X" or "O"
     val status: String = STATUS_WAITING, // "WAITING", "PLAYING", "FINISHED"
     val winner: String = " ", // "X", "O", "T", " "
+    val hostWins: Int = 0,
+    val guestWins: Int = 0,
+    val ties: Int = 0,
     val createdAt: Long = System.currentTimeMillis()
 ) {
     companion object {
