@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067919417280",
+    "project_id": "triquionline-665a2",
+    "storage_bucket": "triquionline-665a2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067919417280:android:45030dee27927a04b3f225",
+        "android_client_info": {
+          "package_name": "com.example.reto5"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMOkczxeB1lnExRqSLFM05winOUg_75fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
