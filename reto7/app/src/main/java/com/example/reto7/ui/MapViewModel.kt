@@ -32,8 +32,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         refreshNearbyPois()
     }
 
-    fun fetchCurrentLocation() {
-        locationHelper.getCurrentLocation { lat, lon ->
+    fun startLocationUpdates() {
+        locationHelper.startLocationUpdates { lat, lon ->
             _uiState.update {
                 it.copy(
                     userLatitude = lat,
@@ -43,6 +43,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             }
             refreshNearbyPois()
         }
+    }
+
+    fun fetchCurrentLocation() {
+        startLocationUpdates()
     }
 
     fun onRadiusChanged(newRadiusKm: Double) {
@@ -79,5 +83,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             selectedCategory = state.selectedCategory
         )
         _uiState.update { it.copy(nearbyPois = pois) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        locationHelper.stopLocationUpdates()
     }
 }
