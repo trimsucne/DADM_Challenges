@@ -1,9 +1,10 @@
 package com.example.reto8.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.reto8.data.PosconsumoPoint
@@ -40,6 +41,8 @@ fun OsmMapView(
 ) {
     val context = LocalContext.current
 
+    var isInitialCenterDone by remember { mutableStateOf(false) }
+
     val mapView = remember {
         val appUserAgent = "Reto8DatosGovApp/1.0 (com.example.reto8; Android)"
         Configuration.getInstance().userAgentValue = appUserAgent
@@ -54,41 +57,41 @@ fun OsmMapView(
         }
     }
 
-    AndroidView(
-        factory = { mapView },
-        update = { map ->
-            map.overlays.clear()
+    Box(modifier = modifier.clipToBounds()) {
+        AndroidView(
+            factory = { mapView },
+            update = { map ->
+                map.overlays.clear()
 
-            val validPoints = puntos.filter { it.latitud != 0.0 && it.longitud != 0.0 }
+                val validPoints = puntos.filter { it.latitud != 0.0 && it.longitud != 0.0 }
 
-            if (validPoints.isNotEmpty()) {
-                val firstPoint = validPoints.first()
-                map.controller.setCenter(GeoPoint(firstPoint.latitud, firstPoint.longitud))
-                if (validPoints.size == 1) {
-                    map.controller.setZoom(14.0)
-                } else {
+                // Center and zoom ONLY on initial map load to preserve user's manual pan and zoom position
+                if (!isInitialCenterDone && validPoints.isNotEmpty()) {
+                    val firstPoint = validPoints.first()
+                    map.controller.setCenter(GeoPoint(firstPoint.latitud, firstPoint.longitud))
                     map.controller.setZoom(7.5)
+                    isInitialCenterDone = true
                 }
-            }
 
-            validPoints.forEach { pt ->
-                val pointGeo = GeoPoint(pt.latitud, pt.longitud)
-                val marker = Marker(map).apply {
-                    position = pointGeo
-                    title = pt.nombrePunto
-                    snippet = "${pt.tipoResiduo} • ${pt.municipio}, ${pt.departamento}"
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    setOnMarkerClickListener { _, _ ->
-                        onPointSelected(pt)
-                        showInfoWindow()
-                        true
+                validPoints.forEach { pt ->
+                    val pointGeo = GeoPoint(pt.latitud, pt.longitud)
+                    val marker = Marker(map).apply {
+                        position = pointGeo
+                        title = pt.nombrePunto
+                        snippet = "${pt.tipoResiduo} • ${pt.municipio}, ${pt.departamento}"
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        setOnMarkerClickListener { _, _ ->
+                            onPointSelected(pt)
+                            showInfoWindow()
+                            true
+                        }
                     }
+                    map.overlays.add(marker)
                 }
-                map.overlays.add(marker)
-            }
 
-            map.invalidate()
-        },
-        modifier = modifier.fillMaxSize()
-    )
+                map.invalidate()
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 }

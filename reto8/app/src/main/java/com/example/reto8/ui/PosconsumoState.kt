@@ -15,6 +15,8 @@ data class PosconsumoState(
     val selectedDepartamento: String = "Todos",
     val selectedCategoria: String = "Todos",
     val searchQuery: String = "",
+    val currentPage: Int = 1,
+    val pageSize: Int = 100,
     val activeTab: MainTab = MainTab.LISTA,
     val selectedPoint: PosconsumoPoint? = null
 )

@@ -3,33 +3,30 @@ package com.example.reto8.data
 import com.google.gson.annotations.SerializedName
 
 data class PosconsumoPoint(
-    @SerializedName("id", alternate = ["_id", "id_punto"])
+    @SerializedName("id", alternate = ["c_d_mun", "id_caso"])
     val id: String = "",
 
-    @SerializedName("nombre_punto", alternate = ["nombre", "punto_posconsumo", "nombre_del_punto"])
+    @SerializedName("cultivo", alternate = ["nombre_punto", "nombre"])
     val nombrePunto: String = "",
 
-    @SerializedName("departamento", alternate = ["nom_dept", "depa_nombre"])
+    @SerializedName("departamento", alternate = ["departamento_nom"])
     val departamento: String = "",
 
-    @SerializedName("municipio", alternate = ["nom_muni", "muni_nombre", "ciudad"])
+    @SerializedName("municipio", alternate = ["ciudad_municipio_nom", "ciudad"])
     val municipio: String = "",
 
-    @SerializedName("direccion", alternate = ["direccion_punto", "ubicacion"])
-    val direccion: String = "",
-
-    @SerializedName("tipo_residuo", alternate = ["categoria", "mecanismo_posconsumo", "programa"])
+    @SerializedName("grupo_de_cultivo", alternate = ["tipo_residuo", "categoria"])
     val tipoResiduo: String = "",
 
-    @SerializedName("horario", alternate = ["horario_atencion", "horarios"])
-    val horario: String = "Lunes a Viernes 8:00 AM - 5:00 PM",
+    @SerializedName("rea_sembrada_ha", alternate = ["direccion"])
+    val direccion: String = "",
 
-    @SerializedName("contacto", alternate = ["telefono", "responsable"])
-    val contacto: String = "Línea de atención ambiental",
+    @SerializedName("producci_n_t", alternate = ["horario"])
+    val horario: String = "",
 
-    @SerializedName("latitud", alternate = ["lat", "location_latitude"])
+    @SerializedName("a_o", alternate = ["contacto"])
+    val contacto: String = "",
+
     val latitud: Double = 0.0,
-
-    @SerializedName("longitud", alternate = ["lon", "lng", "location_longitude"])
     val longitud: Double = 0.0
 )

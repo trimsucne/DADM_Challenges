@@ -8,27 +8,30 @@ class PosconsumoRepository {
 
     val departamentosList = listOf(
         "Todos",
-        "Cundinamarca",
-        "Antioquia",
-        "Valle del Cauca",
-        "Santander",
-        "Atlántico"
+        "BOYACA",
+        "CUNDINAMARCA",
+        "ANTIOQUIA",
+        "VALLE",
+        "SANTANDER",
+        "ATLANTICO"
     )
 
     val categoriasList = listOf(
         "Todos",
-        "Pilas y Baterías",
-        "Medicamentos Vencidos",
-        "Lámparas y Bombillos",
-        "Electrodomésticos y RAEES",
-        "Aceite Usado"
+        "HORTALIZAS",
+        "CEREALES",
+        "FRUTALES",
+        "TUBERCULOS Y PLATANOS",
+        "LEGUMINOSAS"
     )
 
     suspend fun getPuntosPosconsumo(
         departamento: String,
         tipoResiduo: String,
-        query: String
-    ): List<PosconsumoPoint> = withContext(Dispatchers.IO) {
-        service.fetchPuntos(departamento, tipoResiduo, query)
+        query: String,
+        page: Int = 1,
+        pageSize: Int = 100
+    ): Result<List<PosconsumoPoint>> = withContext(Dispatchers.IO) {
+        service.fetchPuntos(departamento, tipoResiduo, query, page, pageSize)
     }
 }

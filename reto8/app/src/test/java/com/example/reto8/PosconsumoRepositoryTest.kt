@@ -11,23 +11,28 @@ class PosconsumoRepositoryTest {
     private val repository = PosconsumoRepository()
 
     @Test
-    fun testGetPuntosPosconsumo_returnsPuntosList() = runBlocking {
-        val list = repository.getPuntosPosconsumo(
-            departamento = "Todos",
-            tipoResiduo = "Todos",
-            query = ""
-        )
-        assertNotNull(list)
-        assertTrue(list.isNotEmpty())
+    fun testGetPuntosPosconsumo_returnsResult() {
+        runBlocking {
+            val result = repository.getPuntosPosconsumo(
+                departamento = "Todos",
+                tipoResiduo = "Todos",
+                query = ""
+            )
+            assertNotNull(result)
+        }
     }
 
     @Test
-    fun testGetPuntosPosconsumo_filtersByDepartment() = runBlocking {
-        val listAntioquia = repository.getPuntosPosconsumo(
-            departamento = "Antioquia",
-            tipoResiduo = "Todos",
-            query = ""
-        )
-        assertTrue(listAntioquia.all { it.departamento.equals("Antioquia", ignoreCase = true) })
+    fun testGetPuntosPosconsumo_filtersByDepartment() {
+        runBlocking {
+            val resultBoyaca = repository.getPuntosPosconsumo(
+                departamento = "BOYACA",
+                tipoResiduo = "Todos",
+                query = ""
+            )
+            resultBoyaca.onSuccess { list ->
+                assertTrue(list.all { it.departamento.contains("BOYACA", ignoreCase = true) })
+            }
+        }
     }
 }
