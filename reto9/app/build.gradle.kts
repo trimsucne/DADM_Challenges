@@ -1,7 +1,33 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Cargar propiedades desde .env o local.properties si existen
+val envFile = rootProject.file(".env")
+val localPropertiesFile = rootProject.file("local.properties")
+val envProps = Properties()
+
+if (envFile.exists()) {
+    envFile.inputStream().use { envProps.load(it) }
+} else if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { envProps.load(it) }
+}
+
+val rawApiKey: String = envProps.getProperty("GEMINI_API_KEY")
+    ?: System.getenv("GEMINI_API_KEY")
+    ?: ""
+
+val geminiApiKey: String = rawApiKey
+    .replace("\r", "")
+    .replace("\n", "")
+    .replace(" ", "")
+    .trim()
+    .removeSurrounding("\"")
+    .removeSurrounding("'")
+    .trim()
 
 android {
     namespace = "com.example.reto9"
@@ -17,6 +43,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -32,6 +60,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

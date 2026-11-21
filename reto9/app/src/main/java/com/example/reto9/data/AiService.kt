@@ -9,34 +9,64 @@ import kotlinx.coroutines.flow.flowOn
 
 class AiService {
 
+    // Modelos actualizados compatibles con la API Key del usuario (gemini-3.8-flash)
+    private val candidateModels = listOf(
+        "gemini-3.8-flash",
+        "gemini-3.5-flash",
+        "gemini-flash-latest",
+        "gemini-pro-latest"
+    )
+
     suspend fun generateResponseStream(
         prompt: String,
         persona: AiPersona,
         history: List<ChatMessage>,
         apiKey: String
     ): Flow<String> = flow {
-        if (apiKey.isNotBlank()) {
-            try {
-                val generativeModel = GenerativeModel(
-                    modelName = "gemini-1.5-flash",
-                    apiKey = apiKey
-                )
+        val cleanKey = apiKey
+            .replace("\r", "")
+            .replace("\n", "")
+            .replace(" ", "")
+            .trim()
+            .removeSurrounding("\"")
+            .removeSurrounding("'")
+            .trim()
 
-                val fullPrompt = "${persona.systemPrompt}\n\nConsulta del usuario: $prompt"
-                val responseStream = generativeModel.generateContentStream(fullPrompt)
+        if (cleanKey.isNotBlank()) {
+            val fullPrompt = "${persona.systemPrompt}\n\nConsulta del usuario: $prompt"
+            var success = false
+            var lastErrorMsg = ""
 
-                var accumulated = ""
-                responseStream.collect { chunk ->
-                    val textChunk = chunk.text ?: ""
-                    accumulated += textChunk
-                    emit(accumulated)
+            for (modelName in candidateModels) {
+                try {
+                    val generativeModel = GenerativeModel(
+                        modelName = modelName,
+                        apiKey = cleanKey
+                    )
+
+                    val responseStream = generativeModel.generateContentStream(fullPrompt)
+                    var accumulated = ""
+                    
+                    responseStream.collect { chunk ->
+                        val textChunk = chunk.text ?: ""
+                        accumulated += textChunk
+                        emit(accumulated)
+                    }
+
+                    if (accumulated.isNotBlank()) {
+                        success = true
+                        break
+                    }
+                } catch (e: Exception) {
+                    val msg = e.localizedMessage ?: e.message ?: "Error de API"
+                    lastErrorMsg = "[$modelName] $msg"
+                    e.printStackTrace()
                 }
-                if (accumulated.isBlank()) {
-                    emit(generateDemoResponse(prompt, persona))
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emit("Nota: (${e.localizedMessage ?: "API error"})\n\n${generateDemoResponse(prompt, persona)}")
+            }
+
+            if (!success) {
+                val cleanError = "⚠️ Error Gemini SDK: $lastErrorMsg"
+                emit("$cleanError\n\n${generateDemoResponse(prompt, persona)}")
             }
         } else {
             val fullDemo = generateDemoResponse(prompt, persona)

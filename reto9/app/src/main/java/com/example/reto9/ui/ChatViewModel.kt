@@ -26,11 +26,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private var generationJob: Job? = null
 
     init {
-        val savedKey = preferencesManager.getApiKey()
+        loadApiKeysAndPersona()
+    }
+
+    private fun loadApiKeysAndPersona() {
+        val savedUserKey = preferencesManager.getUserApiKey()
+        val effectiveKey = preferencesManager.getEffectiveApiKey()
         val savedPersona = preferencesManager.getActivePersona()
         _uiState.update {
             it.copy(
-                apiKey = savedKey,
+                userApiKey = savedUserKey,
+                effectiveApiKey = effectiveKey,
                 activePersona = savedPersona
             )
         }
@@ -90,7 +96,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 prompt = trimmed,
                 persona = currentState.activePersona,
                 history = currentState.messages,
-                apiKey = currentState.apiKey
+                apiKey = currentState.effectiveApiKey
             ).collect { streamedText ->
                 _uiState.update { state ->
                     val updatedList = state.messages.map { msg ->
@@ -113,9 +119,20 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun saveApiKey(key: String) {
-        preferencesManager.saveApiKey(key)
-        _uiState.update { it.copy(apiKey = key, showApiKeyDialog = false) }
+    fun saveUserApiKey(key: String) {
+        preferencesManager.saveUserApiKey(key)
+        val effectiveKey = preferencesManager.getEffectiveApiKey()
+        _uiState.update {
+            it.copy(
+                userApiKey = key,
+                effectiveApiKey = effectiveKey,
+                showApiKeyDialog = false
+            )
+        }
+    }
+
+    fun clearUserApiKey() {
+        saveUserApiKey("")
     }
 
     fun setShowApiKeyDialog(show: Boolean) {
@@ -126,3 +143,4 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         sendWelcomeMessage(_uiState.value.activePersona)
     }
 }
+

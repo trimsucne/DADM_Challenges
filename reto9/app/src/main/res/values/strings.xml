@@ -1,1 +1,5 @@
-<resources><string name="app_name">reto9</string></resources>
+<resources>
+    <string name="app_name">Lumina AI</string>
+    <string name="app_subtitle">Asistente de Inteligencia Generativa</string>
+</resources>
+
